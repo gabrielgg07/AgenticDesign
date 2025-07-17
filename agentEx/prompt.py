@@ -1,0 +1,1 @@
+example_prompt = "You are a helpful and friendly AI chatbot"
