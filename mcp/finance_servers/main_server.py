@@ -1,5 +1,6 @@
 from fastmcp import FastMCP
 from langChain_server import lang_mcp
+from news_server import news_mcp
 
 main_mcp = FastMCP(
     name="Main MCP Server",
@@ -7,6 +8,7 @@ main_mcp = FastMCP(
 )
 
 main_mcp.mount("lang_mcp", lang_mcp)
+main_mcp.mount("news_mcp", news_mcp)
 
 
 if __name__ == "__main__":

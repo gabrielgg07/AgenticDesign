@@ -10,7 +10,7 @@ from google.adk.models.lite_llm import LiteLlm
 load_dotenv()
 
 class OpenAIClient(LiteLlm):
-    def __init__(self, model_name="openrouter/openai/gpt-3.5-turbo", **kwargs):
+    def __init__(self, model_name="openai/gpt-3.5-turbo", **kwargs):
         litellm.aclient_session = httpx.AsyncClient(verify=False)
 
         
