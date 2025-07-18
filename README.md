@@ -75,7 +75,7 @@
 
 * Python 3.10+
 * [Google ADK](https://developers.google.com/agent-development-kit) installed
-* fastMCP server binaries (or Docker image)
+* fastMCP installed
 * API keys for Plaid, Alpha Vantage, NewsAPI, Experian, etc.
 
 ### Installation
@@ -104,41 +104,27 @@ pip install -r requirements.txt
 
    ```bash
    ```
-
-google-adk run --host localhost --port 8001
+adk web
 
 ````
-3. Launch fastMCP context servers:
-   ```bash
-fastmcp serve --config mcp-config.yaml
+3. python mcp/finance_servers/main_server.py
 ````
 
 ---
 
 ## Usage Examples
 
-### Interactive CLI
+### Interactive Interface
 
-```bash
-python cli.py
-> budget: What was my total food spending last month?
-> invest: Analyze VTI vs VXUS for a 10-year horizon.
-> tax: Estimate my federal tax due for 2024 based on uploaded W‑2.
+Provided through ADK WEB and hosted on port 8000
 ```
 
-### RESTful API
-
-```bash
-curl -X POST http://localhost:8001/agent/query \
-  -H "Content-Type: application/json" \
-  -d '{ "agent": "budget", "query": "set a monthly grocery budget of $400" }'
-```
 
 ---
 
 ## Agent Workflow
 
-1. **User Query** arrives via CLI, Web GUI, or API.
+1. **User Query** arrives Web GUI, or API.
 2. **Core LLM** inspects intent, routes to sub‑agent.
 3. **Sub‑Agent** retrieves any required documents (via vector store) or fetches real‑time data (via API).
 4. **Sub‑Agent** returns structured answer; Core LLM composes final response.
