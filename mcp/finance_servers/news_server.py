@@ -6,6 +6,8 @@ import os
 from fastmcp import FastMCP
 from typing import Annotated, Dict
 from pydantic import Field
+from typing import Any
+from newspaper import Article
 
 load_dotenv()
 
@@ -25,7 +27,7 @@ news_mcp = FastMCP(
     description="Grab all of the important headlines from newsapi"
 )
 # ---------- NEWSAPI.ORG ----------
-def get_top_financial_news(count: Annotated[int, Field(description="The number of top news articles to get, default is 5")] = 5) -> list[dict[str, str]]:
+def get_top_financial_news(count: Annotated[int, Field(description="The number of top news articles to get, default is 5")] = 5) -> list[dict[str, Any]]:
     url = "https://newsapi.org/v2/top-headlines"
     params = {
         "category": "business",
@@ -38,7 +40,13 @@ def get_top_financial_news(count: Annotated[int, Field(description="The number o
         res.raise_for_status()
         data = res.json()
         return [
-            {"title": a["title"], "url": a["url"], "source": a["source"]["name"]}
+            {
+                "title": a["title"],
+                "url": a["url"],
+                "source": a["source"]["name"],
+                "description": a.get("description"),   # ← added
+                "content": a.get("content"),           # ← added
+            }
             for a in data.get("articles", [])
         ]
     except Exception as e:
@@ -49,7 +57,7 @@ def get_top_financial_news(count: Annotated[int, Field(description="The number o
     name="search_news_topic",
     description="Search a specified news topic"
 ) 
-def search_news_topic(query: Annotated[str, Field(description="The topic to search for")], count: Annotated[int, Field(description="The number of articles to find, default is 5")] = 5) -> list[dict[str, str]] :
+def search_news_topic(query: Annotated[str, Field(description="The topic to search for")], count: Annotated[int, Field(description="The number of articles to find, default is 5")] = 5) -> list[dict[str, Any]] :
     url = "https://newsapi.org/v2/everything"
     params = {
         "q": query,
@@ -63,7 +71,13 @@ def search_news_topic(query: Annotated[str, Field(description="The topic to sear
         res.raise_for_status()
         data = res.json()
         return [
-            {"title": a["title"], "url": a["url"], "published": a["publishedAt"]}
+            {
+                "title": a["title"],
+                "url": a["url"],
+                "source": a["source"]["name"],
+                "description": a.get("description"),   # ← added
+                "content": a.get("content"),           # ← added
+            }
             for a in data.get("articles", [])
         ]
     except Exception as e:
@@ -118,3 +132,24 @@ def alpha_vantage_company_news(
         ]
     except Exception as e:
         return [{"error": str(e)}]
+
+
+@news_mcp.tool(
+    name="fetch_full_article",
+    description="Download and parse the full text of any news article URL"
+)
+def fetch_full_article(
+    url: Annotated[str, Field(description="The URL of the article to scrape")]
+) -> Dict[str, Any]:
+    try:
+        article = Article(url)
+        article.download()
+        article.parse()
+        return {
+            "title": article.title,
+            "authors": article.authors,
+            "publish_date": article.publish_date.isoformat() if article.publish_date else None,
+            "text": article.text,
+        }
+    except Exception as e:
+        return {"error": str(e)}
